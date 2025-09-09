@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: #2a2a2a;
+            border-right: 1px solid #3a3a3a;
+            overflow-y: auto;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #0078d4;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #106ebe;
+        }
+
+        .btn-secondary {
+            background: #3a3a3a;
+            color: #e0e0e0;
+            border: 1px solid #4a4a4a;
+        }
+
+        .btn-secondary:hover {
+            background: #4a4a4a;
+        }
+
+        .btn-danger {
+            background: #d83b3b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c42e2e;
+        }
+
+        .environment-section {
+            padding: 15px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .environment-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .environment-vars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .env-var {
+            display: flex;
+            gap: 8px;
+        }
+
+        .env-var input {
+            flex: 1;
+            padding: 6px 8px;
+            background: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 12px;
+        }
+
+        .collections-section {
+            padding: 15px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .collection-item {
+            margin-bottom: 8px;
+        }
+
+        .collection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #3a3a3a;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .collection-header:hover {
+            background: #4a4a4a;
+        }
+
+        .collection-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .collection-requests {
+            margin-left: 16px;
+            margin-top: 4px;
+        }
+
+        .request-item {
+            padding: 6px 8px;
+            margin-bottom: 2px;
+            background: #2a2a2a;
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .request-item:hover {
+            background: #3a3a3a;
+        }
+
+        .request-method {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .method-get { background: #4caf50; color: white; }
+        .method-post { background: #ff9800; color: white; }
+        .method-put { background: #2196f3; color: white; }
+        .method-patch { background: #9c27b0; color: white; }
+        .method-delete { background: #f44336; color: white; }
+
+        /* History section moved to sidebar */
+        .history-section {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .history-item {
+            padding: 8px;
+            margin-bottom: 4px;
+            background: #2a2a2a;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: #3a3a3a;
+        }
+
+        .history-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .history-url {
+            font-size: 11px;
+            color: #b0b0b0;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-time {
+            font-size: 10px;
+            color: #888;
+        }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-container {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        .request-panel {
+            width: 50%;
+            border-right: 1px solid #3a3a3a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .response-panel {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 15px 20px 10px;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 16px;
+            font-weight: 600;
+            background: #2a2a2a;
+        }
+
+        .request-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .response-content-wrapper {
+            flex: 1;
+            padding: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .url-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        select, input, textarea {
+            background: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            color: #e0e0e0;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #0078d4;
+        }
+
+        #method {
+            width: 100px;
+        }
+
+        #url {
+            flex: 1;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: #3a3a3a;
+            border: none;
+            color: #e0e0e0;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: #0078d4;
+            color: white;
+        }
+
+        .tab-content {
+            background: #2a2a2a;
+            border-radius: 0 4px 4px 4px;
+            padding: 15px;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .header-row, .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .header-row input, .form-row input {
+            flex: 1;
+        }
+
+        .header-row button, .form-row button {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* JSON body styling for requests - blue theme */
+        #body {
+            width: 100%;
+            height: 200px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #16c5f4;
+            border: 1px solid #3a4a7a;
+        }
+
+        #body:focus {
+            border-color: #16c5f4;
+        }
+
+        .body-type-selector {
+            margin-bottom: 10px;
+        }
+
+        .body-type-selector select {
+            width: 200px;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .response-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .response-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+        }
+
+        .status-code {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .status-success { background: #4caf50; color: white; }
+        .status-error { background: #f44336; color: white; }
+        .status-warning { background: #ff9800; color: white; }
+
+        .response-tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+
+        .response-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* JSON response styling - green theme */
+        #response-data {
+            flex: 1;
+            background: #1a2e1a;
+            border: 1px solid #4a7a4a;
+            color: #4ade80;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow: auto;
+            resize: none;
+        }
+
+        .response-image {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #2a2a2a;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            color: #e0e0e0;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #e0e0e0;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 2px solid #3a3a3a;
+            border-top: 2px solid #0078d4;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #2a2a2a;
+            min-width: 150px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            z-index: 1;
+            border: 1px solid #3a3a3a;
+        }
+
+        .dropdown-content button {
+            color: #e0e0e0;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .dropdown-content button:hover {
+            background-color: #3a3a3a;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 320px;
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .request-panel, .response-panel {
+                width: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Collections</div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary">⚙️</button>
+                    <div class="dropdown-content">
+                        <button onclick="createCollection()">New Collection</button>
+                        <button onclick="importCollection()">Import</button>
+                        <button onclick="exportCollection()">Export</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="environment-section">
+                <div class="environment-title">Environment Variables</div>
+                <div class="environment-vars" id="environmentVars">
+                    <div class="env-var">
+                        <input type="text" placeholder="Key" class="env-key">
+                        <input type="text" placeholder="Value" class="env-value">
+                        <button class="btn btn-secondary" onclick="addEnvVar()">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collections-section" id="collectionsSection">
+                <div class="empty-state">No collections yet. Create one to organize your requests.</div>
+            </div>
+
+            <!-- History section moved to sidebar -->
+            <div class="history-section">
+                <div class="history-title">Request History</div>
+                <div id="historySection">
+                    <div class="empty-state">Request history will appear here</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Area -->
+        <div class="main-area">
+            <!-- Content Container with Request and Response panels -->
+            <div class="content-container">
+                <!-- Request Panel -->
+                <div class="request-panel">
+                    <div class="panel-header">
+                        Request
+                    </div>
+                    
+                    <div class="request-content">
+                        <div class="url-section">
+                            <select id="method">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                                <option value="PATCH">PATCH</option>
+                            </select>
+                            <input type="text" id="url" placeholder="Enter request URL" value="https://jsonplaceholder.typicode.com/posts/1">
+                            <button class="btn btn-primary" onclick="sendRequest()">Send</button>
+                            <button class="btn btn-secondary" onclick="saveRequest()">Save</button>
+                        </div>
+
+                        <div class="tabs">
+                            <button class="tab active" onclick="showTab('headers')">Headers</button>
+                            <button class="tab" onclick="showTab('body')">Body</button>
+                        </div>
+
+                        <div class="tab-content">
+                            <div id="headers-pane" class="tab-pane active">
+                                <div id="headersContainer">
+                                    <div class="header-row">
+                                        <input type="text" placeholder="Header Key" class="header-key">
+                                        <input type="text" placeholder="Header Value" class="header-value">
+                                        <button class="btn btn-secondary" onclick="addHeader()">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="body-pane" class="tab-pane">
+                                <div class="body-type-selector">
+                                    <select id="bodyType" onchange="changeBodyType()">
+                                        <option value="json">JSON</option>
+                                        <option value="form-data">Form Data</option>
+                                        <option value="x-www-form-urlencoded">x-www-form-urlencoded</option>
+                                        <option value="raw">Raw Text</option>
+                                    </select>
+                                </div>
+                                <div id="bodyContent">
+                                    <textarea id="body" placeholder='{"key": "value"}'></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Response Panel -->
+                <div class="response-panel">
+                    <div class="panel-header">
+                        Response
+                    </div>
+                    
+                    <div class="response-content-wrapper">
+                        <div class="response-header">
+                            <div class="response-stats" id="responseStats" style="display: none;">
+                                <span class="status-code" id="statusCode"></span>
+                                <span id="responseTime"></span>
+                                <span id="responseSize"></span>
+                            </div>
+                        </div>
+
+                        <div class="loading" id="loading">
+                            <div class="spinner"></div>
+                            Sending request...
+                        </div>
+
+                        <div class="response-tabs" id="responseTabs" style="display: none;">
+                            <button class="tab active" onclick="showResponseTab('response-body')">Body</button>
+                            <button class="tab" onclick="showResponseTab('response-headers')">Headers</button>
+                        </div>
+
+                        <div class="response-content" id="responseContent">
+                            <div class="empty-state">Send a request to see the response here</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="collectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Collection</h3>
+                <button class="close" onclick="closeModal('collectionModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Collection Name</label>
+                <input type="text" id="collectionName" placeholder="Enter collection name">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('collectionModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmCreateCollection()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="saveRequestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Save Request</h3>
+                <button class="close" onclick="closeModal('saveRequestModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Request Name</label>
+                <input type="text" id="requestName" placeholder="Enter request name">
+            </div>
+            <div class="form-group">
+                <label>Collection</label>
+                <select id="requestCollection">
+                    <option value="">Select a collection</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('saveRequestModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmSaveRequest()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
